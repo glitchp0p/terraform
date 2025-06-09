@@ -1,9 +1,11 @@
 //element combination code for terraform / terraforge game - in conjunction with Claude
 
 use rand::Rng;
+use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Clone)]
-enum BaseElement {
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
+enum ElementType {
+    //base elements
     Earth,
     Water,
     Fire,
@@ -11,99 +13,89 @@ enum BaseElement {
     Life,
     Slime,
     Light,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-enum Tag {
+    //properties
     Compressed,
     Heated,
     Frozen,
     Flowing,
     Growing,
-    Expanding,
     Toxic,
 }
 
-#[derive(Debug, PartialEq)]
-struct TagIntensity {
-    tag: Tag,
-    value: u8, // 1, 2, or 3
+fn create_synonym_dict() -> HashMap<ElementType, Vec<&'static str>> {
+    let mut dict = HashMap::new();
+    
+    dict.insert(ElementType::Earth, vec!["stone", "soil", "rock", "dirt", "clay", "ground"]);
+    dict.insert(ElementType::Fire, vec!["flame", "heat", "ember", "blaze", "searing", "burn"]);
+    dict.insert(ElementType::Water, vec!["liquid", "flow", "stream", "wet", "aqua", "fluid"]);
+    dict.insert(ElementType::Air, vec!["wind", "breath", "sky", "gas", "breeze", "vapor"]);
+    dict.insert(ElementType::Life, vec!["living", "growth", "vital", "organic", "bio", "fertile"]);
+    dict.insert(ElementType::Slime, vec!["goo", "ooze", "gel", "sticky", "viscous", "blob"]);
+    dict.insert(ElementType::Compressed, vec!["dense", "pressed", "solid", "compact", "hard", "tight"]);
+    dict.insert(ElementType::Heated, vec!["warm", "hot", "burning", "thermal", "molten", "searing"]);
+    dict.insert(ElementType::Light, vec!["bright", "brilliant", "aura", "incandecent", "pulsing", "blinding"]);
+    dict.insert(ElementType::Toxic, vec!["infected", "unpleasant", "uncomfortable", "poisonous", "shifty", "disquieting"]);
+    // ... more elements
+
+    
+    dict
 }
 
 #[derive(Debug)]
 struct Element {
-    base: BaseElement,
-    tags: Vec<TagIntensity>,
+    components: Vec<ElementType>,
     amount: f32, 
 }
 
 
-
 fn combine_elements(elem1: Element, elem2: Element, elem3: Element) -> Element {
-    // For now, just keep the first element's base
-    let result_base = elem1.base;
+    // Collect all components in order
+    let mut all_components = Vec::new();
+    all_components.extend(elem1.components);
+    all_components.extend(elem2.components);
+    all_components.extend(elem3.components);
     
-    // For now, just keep the first element's tags (we'll improve this)
-    let mut merged_tags = elem1.tags;
+    // Combine amounts
+    let total_amount = elem1.amount + elem2.amount + elem3.amount;
     
-    let result_amount = elem1.amount + elem2.amount + elem3.amount;
-    
-        // add  tags
-   for element in [elem2, elem3] {
-        for new_tag_intensity in element.tags {
-            //check if tag type exists
-            if let Some(exisiting_tag) = merged_tags.iter_mut().find(|t| t.tag == new_tag_intensity.tag) {
-                //same tag exisits! add intensities
-                exisiting_tag.value += new_tag_intensity.value;
-            } else {
-                //new tag type, just add it
-                merged_tags.push(new_tag_intensity);
-            }
-        }
-    }
-
-    // Simple amount combination
-   
     Element {
-        base: result_base,
-        tags: merged_tags,
-        amount: result_amount,
+        components: all_components,
+        amount: total_amount,
     }
 }
+
 
 fn create_random_element() -> Element {
     let mut rng = rand::thread_rng();
     
-    // Pick random base element
-    let bases = [BaseElement::Earth, BaseElement::Water, BaseElement::Fire, BaseElement::Air, BaseElement::Life];
-    let random_base = bases[rng.gen_range(0..bases.len())].clone();
+    let element_types = [
+        ElementType::Earth, ElementType::Water, ElementType::Fire, 
+        ElementType::Air, ElementType::Life, ElementType::Slime,
+        ElementType::Compressed, ElementType::Heated, ElementType::Frozen, 
+        ElementType::Flowing, ElementType::Growing, ElementType::Light, 
+        ElementType::Toxic,
+    ];
     
-    // Pick random tag and intensity
-    let tags = [Tag::Compressed, Tag::Heated, Tag::Frozen, Tag::Flowing, Tag::Growing];
-    let random_tag = tags[rng.gen_range(0..tags.len())].clone();
-    let random_intensity = rng.gen_range(1..=3);
+    let random_element = element_types[rng.gen_range(0..element_types.len())].clone();
     let random_amount = rng.gen_range(1.0..10.0);
     
     Element {
-        base: random_base,
-        tags: vec![TagIntensity { tag: random_tag, value: random_intensity }],
+        components: vec![random_element],
         amount: random_amount,
     }
 }
 
 impl Element {
     fn display(&self) -> String {
-        let base_name = format!("{:?}", self.base);
-        
-        let tag_descriptions: Vec<String> = self.tags
-            .iter()
-            .map(|t| format!("{:?}({})", t.tag, t.value))
-            .collect();
-        
-        if tag_descriptions.is_empty() {
-            format!("{} [{:.1}]", base_name, self.amount)
+        if self.components.is_empty() {
+            format!("Empty [{:.1}]", self.amount)
         } else {
-            format!("{} + {} [{:.1}]", base_name, tag_descriptions.join(" + "), self.amount)
+            let component_names: Vec<String> = self.components
+                .iter()
+                .map(|c| format!("{:?}", c))
+                .collect();
+            
+            format!("{} [{:.1}]", component_names.join(" + "), self.amount)
         }
     }
 }
