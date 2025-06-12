@@ -1,5 +1,19 @@
 //element combination code for terraform / terraforge game - in conjunction with Claude
 
+use std::collections::HashSet;
+
+use crossterm::{
+    event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
+    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
+};
+
+use std::io::{self, stdout};
+use std::time::{Duration, Instant};
+
+mod time;
+use time::TimeSystem;
+
 use rand::Rng;
 use std::collections::HashMap;
 
@@ -224,23 +238,93 @@ fn generate_element_name(
     format!("{} {}ness", first_name, second_name)
 }
 
-fn main() {
-    let elem1 = create_random_element();
-    let elem2 = create_random_element();
-    let elem3 = create_random_element();
 
-    println!(
-        "Combining: {} ({})",
-        elem1.display_with_names(),
-        elem1.display()
-    );
-    println!("With: {} ({})", elem2.display_with_names(), elem2.display());
-    println!("And: {} ({})", elem3.display_with_names(), elem3.display());
+fn main() -> io::Result<()> {
+    //enable raw mode for real time key input
+    terminal::enable_raw_mode()?;
+    stdout().execute(EnterAlternateScreen)?;
+    
+    // let elem1 = create_random_element();
+    // let elem2 = create_random_element();
+    // let elem3 = create_random_element();
+    //
+    // println!(
+    //     "Combining: {} ({})",
+    //     elem1.display_with_names(),
+    //     elem1.display()
+    // );
+    // println!("With: {} ({})", elem2.display_with_names(), elem2.display());
+    // println!("And: {} ({})", elem3.display_with_names(), elem3.display());
+    //
+    // let result = combine_elements(elem1, elem2, elem3);
+    // println!(
+    //     "Result: {} ({})",
+    //     result.display_with_names(),
+    //     result.display()
+    // );
+    
 
-    let result = combine_elements(elem1, elem2, elem3);
-    println!(
-        "Result: {} ({})",
-        result.display_with_names(),
-        result.display()
-    );
+    // Time system first implementation
+    
+    let mut time_system = TimeSystem::new();
+    let mut last_time = Instant::now();
+    let mut held_keys = HashSet::new();
+
+    println!("Time System Test - press 'q' to quit, left/right arrows control time\r");
+
+    loop {
+        let now = Instant::now();
+        let delta_time = now.duration_since(last_time).as_secs_f32();
+        last_time = now;
+
+        //check for keyboard input
+        let (left_held, right_held, should_quit) = check_input(&mut held_keys)?;
+
+        if should_quit {
+            break;
+        }
+    
+
+        time_system.update(delta_time, right_held, left_held);
+
+        println!("Tick: {}, Rate: {:.2}, Hold Duration: {:.2}",
+            time_system.current_tick,
+            time_system.tick_rate,
+            time_system.key_hold_duration);
+
+        std::thread::sleep(Duration::from_millis(50)); //20 fps update
+
+    }
+
+    //cleanup 
+    terminal::disable_raw_mode()?;
+    stdout().execute(LeaveAlternateScreen)?;
+    Ok(())
+}
+
+
+fn check_input(held_keys: &mut HashSet<KeyCode>) -> io::Result<(bool, bool, bool)> {
+    let mut should_quit = false;
+    
+    while event::poll(Duration::from_millis(0))? {
+        if let Event::Key(key_event) = event::read()? {
+            match key_event.kind {
+                KeyEventKind::Press => {
+                    held_keys.insert(key_event.code);
+                    if key_event.code == KeyCode::Char('q') {
+                        should_quit = true;
+                    }
+                }
+                KeyEventKind::Release => {
+                    held_keys.remove(&key_event.code);
+                }
+                _ => {}
+            }
+        }
+    }
+    
+    let left_held = held_keys.contains(&KeyCode::Left);
+    let right_held = held_keys.contains(&KeyCode::Right);
+    
+    Ok((left_held, right_held, should_quit))
 }
