@@ -287,12 +287,20 @@ fn main() -> io::Result<()> {
 
         time_system.update(delta_time, right_held, left_held);
 
-        println!("Tick: {}, Rate: {:.2}, Hold Duration: {:.2}",
-            time_system.current_tick,
-            time_system.tick_rate,
-            time_system.key_hold_duration);
+       // println!("Tick: {}, Rate: {:.2}, Hold Duration: {:.2}",
+       //     time_system.current_tick,
+       //     time_system.tick_rate,
+       //     time_system.key_hold_duration);
 
-        std::thread::sleep(Duration::from_millis(50)); //20 fps update
+        std::thread::sleep(Duration::from_millis(200)); //50ms = 20 fps update
+
+        //added to debug input errors
+        println!("Tick: {}, Rate: {:.2}, Hold Duration: {:.2}, Left: {}, Right: {}\r", 
+            time_system.current_tick, 
+            time_system.tick_rate,
+            time_system.key_hold_duration,
+            left_held,
+            right_held);
 
     }
 
@@ -305,26 +313,22 @@ fn main() -> io::Result<()> {
 
 fn check_input(held_keys: &mut HashSet<KeyCode>) -> io::Result<(bool, bool, bool)> {
     let mut should_quit = false;
-    
+    let mut left_pressed = false;
+    let mut right_pressed = false;
+
+    //check for new key presses only
     while event::poll(Duration::from_millis(0))? {
         if let Event::Key(key_event) = event::read()? {
-            match key_event.kind {
-                KeyEventKind::Press => {
-                    held_keys.insert(key_event.code);
-                    if key_event.code == KeyCode::Char('q') {
-                        should_quit = true;
-                    }
+            if key_event.kind == KeyEventKind::Press {
+                match key_event.code {
+                    KeyCode::Left => left_pressed = true,
+                    KeyCode::Right => right_pressed = true,
+                    KeyCode::Char('q') => should_quit = true,
+                    _ => {}
                 }
-                KeyEventKind::Release => {
-                    held_keys.remove(&key_event.code);
-                }
-                _ => {}
             }
         }
     }
     
-    let left_held = held_keys.contains(&KeyCode::Left);
-    let right_held = held_keys.contains(&KeyCode::Right);
-    
-    Ok((left_held, right_held, should_quit))
+    Ok((left_pressed, right_pressed, should_quit))
 }
