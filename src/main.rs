@@ -295,10 +295,9 @@ fn main() -> io::Result<()> {
         std::thread::sleep(Duration::from_millis(200)); //50ms = 20 fps update
 
         //added to debug input errors
-        println!("Tick: {}, Rate: {:.2}, Hold Duration: {:.2}, Left: {}, Right: {}\r", 
+        println!("Tick: {}, Rate: {:.2}, Left: {}, Right: {}\r", 
             time_system.current_tick, 
             time_system.tick_rate,
-            time_system.key_hold_duration,
             left_held,
             right_held);
 
