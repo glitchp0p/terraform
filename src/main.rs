@@ -292,7 +292,7 @@ fn main() -> io::Result<()> {
             time_system.tick_rate,
             time_system.key_hold_duration);
 
-        std::thread::sleep(Duration::from_millis(50)); //20 fps update
+        std::thread::sleep(Duration::from_millis(200)); //50 = 20 fps update
 
     }
 

@@ -43,3 +43,80 @@ Simple "blocks" - basic visual programming elements
 
 Which feels most exciting to tackle first? The time manipulation could be really satisfying with your current system - watching "dense gooeyness" form slowly or rapidly based on time scale.
 What resonates most with your vision right now?
+
+
+
+
+
+
+
+=-=-=-=-=-=-=
+
+
+*new idea*
+
+[after Noita]
+
+procedural emergent gameplay is a result of interactions between in game elements/ materials, more than from randomly generated features.
+
+***example***
+
+- all materials have attributes froma master list of attributes
+- 100% attributes have a base colour
+- all materials have some amount of some attributes
+
+*****example attributes*****
+    - flammable
+    - quenching
+    - adhesive
+    - viscous
+    - explosive
+    - levitating
+    - accelerating
+    - heavy
+    - corrosive
+    - enchanting
+    - cloudy
+    - invisble
+    - noxious
+    - growing
+    - evolving
+    - incandescent 
+    - phosphorescent 
+    - negative
+    - hot
+    - frozen
+    - liquid 
+    - solid
+    - gas
+    - plasma
+    - furry 
+    - scaled
+    - carapace
+    - stone
+    - metal 
+    - wood
+    - ...
+
+now each in game thing, mob, item, etc, can be described by some combination of these elemetns, and since each element has an rgb value, I could try to combine these for the base colour of each thing.
+
+example 1: 
+    WATER
+        - liquid 60% 
+        - quenching 39% 
+        - life giving 1%
+
+
+example 2: 
+    WATER
+        - liquid 100% 
+        - quenching 100% 
+        - life giving 10%
+
+will need to look at the maths. I like example 2 better, but would need to come up with a system that could work with crazy maths like this. Advantages of this system would be power could scale easily with higher numbers, and maths is less fiddly that trying to squeeze into 100% totals.
+
+
+
+
+
+

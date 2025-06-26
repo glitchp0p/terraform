@@ -34,7 +34,7 @@ impl TimeSystem {
             curve_type: TimeCurve::Log,
             key_hold_duration: 0.0,
             is_paused: false,
-            reverse_unlocked: false, // Start locked
+            reverse_unlocked: true, // Start locked
             last_update: Instant::now(),
         }
     }
